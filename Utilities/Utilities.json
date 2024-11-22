@@ -1,0 +1,12 @@
+{
+    "utilities": [
+        {
+            "name": "write",
+            "path": "write.write"
+        },
+        {
+            "name": "insert",
+            "path": "insert.insert"
+        }
+    ]
+}

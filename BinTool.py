@@ -7,7 +7,7 @@ import os
 import importlib
 import sys
 
-class logger:
+class Logger:
     def __init__(self, prefix):
         self.prefix = prefix
     def print(self, *args, **kwargs):
@@ -33,40 +33,24 @@ class BinTool:
     def handle(self):
         return
 
-log = logger('BinTool')
+log = Logger('BinTool')
 
-def import_utilities(path, module):
+def import_all_utilities(directory):
     utilities = {}
-    json_utilities_file = "Utilities.json"
-    json_utilities = None
-    old_cwd = os.getcwd()
-    os.chdir(path)
-    sys.path.append(os.getcwd())
-    os.chdir(os.path.join(os.getcwd(), module))
-    try:
-        with open(json_utilities_file) as f:
-            json_utilities = json.load(f)
-        if 'utilities' not in json_utilities:
-            log.error('lack of "utilities" field, Utility.json')
-            return utilities
-        for utility in json_utilities['utilities']:
-            if 'name' not in utility:
-                log.error('lack of "name" field, Utility.json')
-                continue
-            if  'path' not in utility:
-                log.error('lack of "path" field, Utility.json')
-                continue
-            submodule_path = module+'.'+utility['path']
-            spec = importlib.util.find_spec(submodule_path)
-            if spec == None:
-                log.error(f'path {utility['path']} not exists, Utility.json')
-                continue
-            log.debug(f'importing {utility["name"]}, path {utility["path"]}')
-            lib = importlib.import_module(submodule_path)
-            utilities[utility['name']] = lib
-        return utilities
-    finally:
-        os.chdir(old_cwd)
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isdir(filepath):
+            # if is a directory, recursively import all modules in it
+            utilities.update(import_all_utilities(filepath))
+        elif filename.endswith('.py') and filename != '__init__.py':
+            # if is a python file, import it as a module
+            module_name = filename[:-3]
+            module_path = os.path.relpath(filepath, os.path.dirname(__file__))
+            module_path = module_path.replace(os.sep, '.')
+            module_path = module_path[:-3]
+            utilitiy = importlib.import_module(module_path)
+            utilities[module_name] = utilitiy
+    return utilities
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='An useful tool for ".bin" file')
@@ -79,5 +63,9 @@ if __name__ == '__main__':
     log.warning('BinTool 1.0')
     log.info('BinTool 1.0')
     log.critical('BinTool 1.0')
-    utilities = import_utilities("./", "Utilities")
+    
+    utilities = import_all_utilities("./Utilities")
+    log.print('-----Utilities imported-----')
+    for key, value in utilities.items():
+        log.print(f"{key}: {value}")
     bt = BinTool(utilities)

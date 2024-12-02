@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Current File with Arguments",
+            "name": "Python Debugger: 'BinTool.py' with args",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/BinTool.py",
@@ -15,6 +15,12 @@
                 "-d", "debug", "1", 
                 "-d", "debug2", "2"
             ]
+        },
+        {
+            "name": "Python Debugger: Module test_env",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "bintoollib.test_env"
         }
     ]
 }

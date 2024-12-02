@@ -1,5 +1,6 @@
 # coding = utf-8
 
+import ast
 import argparse
 import os
 import importlib
@@ -31,11 +32,17 @@ def import_all_utilities(directory):
         elif filename.endswith('.py') and filename != '__init__.py':
             # if is a python file, import it as a module
             module_name = filename[:-3]
-            module_path = os.path.relpath(filepath, os.path.dirname(__file__))
-            module_path = module_path.replace(os.sep, '.')
-            module_path = module_path[:-3]
-            utilitiy = importlib.import_module(module_path)
-            utilities[module_name] = utilitiy
+            code = None
+            with open(filepath, 'r') as f:
+                code = f.read()
+            try:
+                ast.parse(code)
+            except SyntaxError:
+                log.error(f'{module_name} syntax error')
+                continue
+            module_env = {'global_env': {}, 'local_env': {}}
+            exec(code, module_env['global_env'], module_env['local_env'])
+            utilities[module_name] = module_env
     return utilities
 
 if __name__ == '__main__':
@@ -50,7 +57,7 @@ if __name__ == '__main__':
     log.print('-----Utilities imported-----')
     utilities = import_all_utilities("./Utilities")
     for key, value in utilities.items():
-        log.print(f"{key}: {value}")
+        log.print(f"{key}")
 
     log.print(f'-----Load project -----')
     project_path = args.project

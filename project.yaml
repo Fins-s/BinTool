@@ -1,0 +1,19 @@
+opts:
+  - type: var
+    name: "len"
+    data: "1+1"
+  - type: write
+    addr: "0x0000000"
+    datas:
+      - format: "<p"
+        data: "Hello, World!"
+      - format: "<p"
+        data: "Hello, Jane!"
+  - type: insert
+    addr: "0x0000000"
+    data: "Hello, Jane!"
+  - type: import
+    addr: "0x0000000"
+    file: "test.bin"
+  - type: export
+    file: "test.bin"

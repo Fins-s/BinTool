@@ -11,10 +11,19 @@ from bintoollib import Logger
 from bintoollib import Env
 
 class BinTool:
-    def __init__(self, utilities):
-        self.data = [] # file data array       [byte, byte, byte, ...]
-        self.env = {} # environment variables  {"env_name", data}
+    def __init__(self, utilities, logger):
+        self.log = logger       # logger
+        self.data = []             # file data array       [byte, byte, byte, ...]
+        self.env = Env()           # environment variables  {"env_name", data}
         self.utilities = utilities # utilities {"utilitie_name", python_lib}
+    def define(self, name, expr):
+        try:
+            data = self.env.exec(expr)
+            self.env.define(name, data)
+        except Exception as e:
+            self.log.error(f'{e}')
+        finally:
+            self.log.print(f'Var: {{\'{self.log.limit(name)}\': "{self.log.limit(expr)}" = {self.log.limit(str(data))}}}')
     def build(self, yaml_project):
         return
     def astExe(self, ast):
@@ -70,12 +79,12 @@ if __name__ == '__main__':
         project = yaml.safe_load(project_file)
 
     
-    bt = BinTool(utilities)
+    bt = BinTool(utilities, log)
 
     log.print('-----Environment variable per define -----')
     if args.define:
         for var in args.define:
-            print(f"{var[0]}: {var[1]}")
+            bt.define(var[0], var[1])
 
     log.print(f'-----Building-----')
     bt.build(project)
